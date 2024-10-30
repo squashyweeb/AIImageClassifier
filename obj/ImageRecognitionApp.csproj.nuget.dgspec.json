@@ -47,9 +47,17 @@
               "target": "Package",
               "version": "[3.0.1, )"
             },
+            "Microsoft.ML.ImageAnalytics": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
             "Microsoft.ML.Vision": {
               "target": "Package",
               "version": "[3.0.1, )"
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[8.0.10, )"
             }
           },
           "imports": [

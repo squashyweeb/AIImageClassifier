@@ -1,0 +1,6 @@
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.csproj.AssemblyReference.cache
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.AssemblyInfoInputs.cache
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.AssemblyInfo.cs
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.csproj.CoreCompileInputs.cache
+C:\Users\wranr\Downloads\test\MyFirstProject\ImageRecognitionApp\obj\Debug\net8.0\ImageRecognitionApp.sourcelink.json
