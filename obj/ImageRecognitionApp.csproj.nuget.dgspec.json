@@ -49,11 +49,23 @@
             },
             "Microsoft.ML.ImageAnalytics": {
               "target": "Package",
+              "version": "[1.6.0, )"
+            },
+            "Microsoft.ML.OnnxRuntime": {
+              "target": "Package",
+              "version": "[1.19.2, )"
+            },
+            "Microsoft.ML.OnnxTransformer": {
+              "target": "Package",
               "version": "[3.0.1, )"
             },
             "Microsoft.ML.Vision": {
               "target": "Package",
               "version": "[3.0.1, )"
+            },
+            "SixLabors.ImageSharp": {
+              "target": "Package",
+              "version": "[3.1.5, )"
             },
             "System.Drawing.Common": {
               "target": "Package",

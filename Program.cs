@@ -1,52 +1,94 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using Microsoft.ML;
-using Microsoft.ML.Data;
-using Microsoft.ML.Transforms.Image;
+using System.Linq;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors; // Required for tensor operations
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
-class Program
+namespace ImageRecognitionApp
 {
-    public class ImageData
+    class Program
     {
-        [ImageType(299, 299)] 
-        public Bitmap Image { get; set; }
-        public string ImagePath { get; set; }
-    }
-
-    public class ImagePrediction : ImageData
-    {
-        public float[] Score { get; set; } 
-        public string PredictedLabel { get; set; } 
-    }
-
-    static void Main()
-    {
-        string modelPath = "Models/adv_inception_v3.onnx"; 
-        var mlContext = new MLContext();
-
-        var images = Directory.GetFiles("images"); 
-        var imageData = new List<ImageData>();
-
-        foreach (var imagePath in images)
+        static void Main(string[] args)
         {
-            imageData.Add(new ImageData { ImagePath = imagePath });
+            // Check if the correct number of arguments is provided
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Usage: ImageRecognitionApp <model_path> <image_path>");
+                return;
+            }
+
+            string modelPath = args[0];
+            string imagePath = args[1];
+
+            // Load model and predict
+            LoadAndPredict(modelPath, imagePath);
         }
 
-        var imagePipeline = mlContext.Transforms.LoadImages("Image", "ImagePath")
-            .Append(mlContext.Transforms.ResizeImages("Image", 299, 299))
-            .Append(mlContext.Transforms.ExtractPixels("Image"))
-            .Append(mlContext.Transforms.ApplyOnnxModel(modelPath));
-
-        var imageDataView = mlContext.Data.LoadFromEnumerable(imageData);
-        var transformer = imagePipeline.Fit(imageDataView);
-        var predictions = transformer.Transform(imageDataView);
-
-        var scoreColumn = predictions.GetColumn<float[]>("Score");
-        foreach (var prediction in scoreColumn)
+        static void LoadAndPredict(string modelPath, string imagePath)
         {
-            Console.WriteLine("Prediction Score: " + string.Join(",", prediction)); 
+            // Validate model file existence
+            if (!File.Exists(modelPath))
+            {
+                Console.WriteLine($"Model file not found: {modelPath}");
+                return;
+            }
+
+            // Validate image file existence
+            if (!File.Exists(imagePath))
+            {
+                Console.WriteLine($"Image file not found: {imagePath}");
+                return;
+            }
+
+            // Load ONNX model
+            using var session = new InferenceSession(modelPath);
+
+            // Load image using ImageSharp
+            using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
+            {
+                // Resize image to model input size (e.g., 299x299)
+                image.Mutate(x => x.Resize(299, 299));
+
+                // Prepare input data for the model
+                var inputData = new float[1 * 3 * 299 * 299];
+                for (int y = 0; y < 299; y++)
+                {
+                    for (int x = 0; x < 299; x++)
+                    {
+                        var pixel = image[x, y];
+                        inputData[0 * 3 * 299 * 299 + 0 * 299 * 299 + y * 299 + x] = pixel.R / 255f; // Red
+                        inputData[0 * 3 * 299 * 299 + 1 * 299 * 299 + y * 299 + x] = pixel.G / 255f; // Green
+                        inputData[0 * 3 * 299 * 299 + 2 * 299 * 299 + y * 299 + x] = pixel.B / 255f; // Blue
+                    }
+                }
+
+                // Create input tensor
+                var inputTensor = new DenseTensor<float>(inputData, new int[] { 1, 3, 299, 299 }); // DenseTensor for input
+                var inputs = new[] { NamedOnnxValue.CreateFromTensor("input", inputTensor) }; // Replace "input" with actual input name
+
+                // Run inference
+                using var results = session.Run(inputs);
+                var outputTensor = results.First().AsTensor<float>();
+
+                // Get predicted class index by finding max value
+                var maxIndex = 0;
+                var maxValue = float.MinValue;
+
+                for (int i = 0; i < outputTensor.Length; i++)
+                {
+                    if (outputTensor[i] > maxValue)
+                    {
+                        maxValue = outputTensor[i];
+                        maxIndex = i;
+                    }
+                }
+
+                // Output predicted class index
+                Console.WriteLine($"Predicted class index: {maxIndex}");
+            }
         }
     }
 }
